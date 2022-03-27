@@ -1,0 +1,1 @@
+export EDITOR=`which name_of_editor`
