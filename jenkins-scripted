@@ -1,0 +1,62 @@
+node(){
+    
+    def mavenHome = tool name: "maven3.8.4"
+    
+    stage('checkout-the-code'){
+        
+        git 'https://github.com/Eshwardvp/maven-web-application.git'
+        
+        
+    }
+    
+    stage('build-the-package'){
+        
+        sh "${mavenHome}/bin/mvn clean package"
+        
+    }
+    
+    stage('exe-sonarqube-report'){
+        
+        sh "${mavenHome}/bin/mvn sonar:sonar"
+        
+    }
+    
+    stage('upload-artifacts'){
+        
+        
+        sh "${mavenHome}/bin/mvn clean deploy"
+
+    }
+    
+    stage('docker-image'){
+        
+        
+        sh "docker build -t eshwarreddy/jenkins-cicd ."
+        
+    }
+    
+    
+    stage('docker login & push-image'){
+    
+      withCredentials([string(credentialsId: 'dockercred', variable: 'dockercred')]) {
+      
+      
+      sh "docker login -u eshwarreddy -p ${dockercred}"
+}
+    
+        sh "docker push eshwarreddy/jenkins-cicd"
+        
+    }
+    
+    stage('deploy into server'){
+        
+        sshagent(['docker_dev']) {
+            
+        sh "ssh -o StrictHostKeyChecking=no ubuntu@52.66.52.12 docker rm -f jenkins-cicd || true"
+        
+        sh "ssh -o StrictHostKeyChecking=no ubuntu@52.66.52.12 docker run -d -p 8080:8080 --name jenkins-cicd eshwarreddy/jenkins-cicd"
+    }
+    
+}
+
+}
