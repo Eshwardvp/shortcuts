@@ -1,0 +1,84 @@
+pipeline{
+    
+    agent any
+    
+     tools{
+         
+         maven 'maven3.8.4'
+     }
+      
+      options {
+      buildDiscarder logRotator(artifactDaysToKeepStr: '1', artifactNumToKeepStr: '5', daysToKeepStr: '1', numToKeepStr: '5')
+     }
+     
+     
+     
+        stages{
+            
+            stage('checkoutcode'){
+             steps{
+              git credentialsId: 'Github-Cred', url: 'https://github.com/Eshwardvp/maven-web-application.git' 
+            }
+            }
+            
+            
+          stage('Build'){
+              
+              steps{
+                  
+                  sh "mvn clean package"
+                  
+              }
+          }
+         
+         
+         
+         stage('SonarReport'){
+             
+             steps{
+                
+                sh "mvn sonar:sonar" 
+                 
+             }
+         }
+         
+         stage('uploadArtifact'){
+             
+          steps{
+             sh "mvn clean deploy"
+         }
+         }
+         
+         
+         stage('build docker'){
+             
+             steps{
+                 
+                 sh "docker build -t eshwarreddy/declarative-maven:1 ."
+             }
+         }
+         
+         
+         stage('docker container'){
+             
+             steps{
+                 
+                 sh "docker run -d -p 8083:8080 --name maven-declaration eshwarreddy/declarative-maven:1"
+             }
+             
+         }
+         
+         stage('docker login & push'){
+             
+             steps{
+                 
+                 sh "docker login -u eshwarreddy -p DI@eswar9293 "
+             }
+             
+         }
+         
+         
+        }//stages closing
+
+    }//pipeline closing
+
