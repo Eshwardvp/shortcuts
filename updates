@@ -3,3 +3,14 @@ to set vi or vim in linux distro
 sudo update-alternatives --config editor
 
 select number which you wanted to set editor
+
+
+To search empty directories 
+
+find . -type d -empty (To search all the empty directories) >>>>> 
+find . -type f -empty (To search all the empty files) >>>>> 
+
+to know how many letters & words..
+wc -l for letters
+wc -l for words
+
